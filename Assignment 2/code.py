@@ -39,6 +39,18 @@ def ForwardBackward(ev: np.ndarray, prior: np.ndarray) -> np.ndarray:
     return sv
 
 
+def Task22(
+    observation_list: List[np.ndarray], f0: np.ndarray, T_matrix: np.ndarray
+) -> np.ndarray:
+    result: np.ndarray = np.zeros((len(observation_list) + 1, 2))
+    result[0] = f0
+
+    for i, observation in enumerate(observation_list):
+        result[i + 1] = Forward(result[i], observation, T_matrix)
+
+    return result
+
+
 def main():
     T_matrix: np.ndarray = np.array([[0.7, 0.3], [0.3, 0.7]])
     O_true: np.ndarray = np.array([[0.9, 0], [0, 0.2]])
@@ -47,16 +59,12 @@ def main():
 
     observation_list: List[np.ndarray] = [O_true, O_true, O_false, O_true, O_true]
 
-    # observation_list: List[np.ndarray] = [O_true, O_true]
-    result: np.ndarray = np.zeros((len(observation_list) + 1, 2))
-    result[0] = f0
-
     observation_array = np.array(observation_list)
     sv = ForwardBackward(observation_array, f0)
-    print(f"sv={sv}")
+    print(f"{sv=}")
 
-    for i, observation in enumerate(observation_list):
-        result[i + 1] = Forward(result[i], observation, T_matrix)
+    result: np.ndarray = Task22(observation_list, f0, T_matrix)
+    print(f"{result=}")
 
 
 if __name__ == "__main__":
