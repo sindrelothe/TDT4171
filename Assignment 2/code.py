@@ -60,7 +60,7 @@ def main():
     observation_list: List[np.ndarray] = [O_true, O_true, O_false, O_true, O_true]
 
     observation_array = np.array(observation_list)
-    sv = ForwardBackward(observation_array, f0)
+    sv: np.ndarray = ForwardBackward(observation_array, f0)
     print(f"{sv=}")
 
     result: np.ndarray = Task22(observation_list, f0, T_matrix)
