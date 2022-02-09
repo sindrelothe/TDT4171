@@ -18,6 +18,7 @@ def Backward(
     T_matrix: np.ndarray = np.array([[0.7, 0.3], [0.3, 0.7]]),
 ) -> np.ndarray:
     fnext: np.ndarray = np.dot(np.dot(T_matrix, O_matrix), f)
+    fnext = fnext / fnext.sum()
     return fnext
 
 
@@ -36,6 +37,8 @@ def ForwardBackward(ev: np.ndarray, prior: np.ndarray) -> np.ndarray:
         sv[i] = vec / vec.sum()
         if i > 0:
             bv[i - 1] = Backward(bv[i], ev[i])
+    print(f"{bv=}")
+    print(f"{fv=}")
     return sv
 
 
