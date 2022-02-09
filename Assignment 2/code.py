@@ -58,8 +58,8 @@ def main():
     f0: np.ndarray = np.array([0.5, 0.5])
 
     observation_list: List[np.ndarray] = [O_true, O_true, O_false, O_true, O_true]
+    observation_array: np.ndarray = np.array(observation_list)
 
-    observation_array = np.array(observation_list)
     sv: np.ndarray = ForwardBackward(observation_array, f0)
     print(f"{sv=}")
 
