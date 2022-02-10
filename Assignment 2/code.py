@@ -30,7 +30,6 @@ def Backward(
     T_matrix: np.ndarray = np.array([[0.7, 0.3], [0.3, 0.7]]),
 ) -> np.ndarray:
     fnext: np.ndarray = np.dot(np.dot(T_matrix, O_matrix), f)
-    fnext = fnext / fnext.sum()
     return fnext
 
 
@@ -44,6 +43,8 @@ def ForwardBackward(ev: np.ndarray, prior: np.ndarray) -> np.ndarray:
 
         Returns:
             sv (np.ndarray): probablities for each evidence
+            fv (np.ndarray): forward report
+            bv (np.ndarray): backward report
     """
     fv: np.ndarray = np.zeros((ev.shape[0] + 1, prior.shape[0]))
     bv: np.ndarray = np.zeros((ev.shape[0], prior.shape[0]))
@@ -59,37 +60,21 @@ def ForwardBackward(ev: np.ndarray, prior: np.ndarray) -> np.ndarray:
         sv[i] = vec / vec.sum()
         if i > 0:
             bv[i - 1] = Backward(bv[i], ev[i])
-    print(f"{bv=}")
-    print(f"{fv=}")
-    return sv
 
-
-def Task22(
-    observation_list: List[np.ndarray], f0: np.ndarray, T_matrix: np.ndarray
-) -> np.ndarray:
-    result: np.ndarray = np.zeros((len(observation_list) + 1, 2))
-    result[0] = f0
-
-    for i, observation in enumerate(observation_list):
-        result[i + 1] = Forward(result[i], observation, T_matrix)
-
-    return result
+    return sv, fv, bv
 
 
 def main():
-    T_matrix: np.ndarray = np.array([[0.7, 0.3], [0.3, 0.7]])
     O_true: np.ndarray = np.array([[0.9, 0], [0, 0.2]])
     O_false: np.ndarray = np.array([[0.1, 0], [0, 0.8]])
     f0: np.ndarray = np.array([0.5, 0.5])
 
-    observation_list: List[np.ndarray] = [O_true, O_true, O_false, O_true, O_true]
-    observation_array: np.ndarray = np.array(observation_list)
+    observation_array: np.ndarray = np.array([O_true, O_true, O_false, O_true, O_true])
 
-    sv: np.ndarray = ForwardBackward(observation_array, f0)
+    sv, fv, bv = ForwardBackward(observation_array, f0)
+    print(f"{fv=}")
+    print(f"{bv=}")
     print(f"{sv=}")
-
-    result: np.ndarray = Task22(observation_list, f0, T_matrix)
-    print(f"{result=}")
 
 
 if __name__ == "__main__":
