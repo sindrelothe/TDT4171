@@ -2,6 +2,12 @@ import numpy as np
 from typing import List
 
 
+# Function which implements the forward operation described in Russel and Norvig.
+# Params:
+# f: previous state, numpy array
+# O_matrix: matrix to apply to state, denoted O in Russel and Norvig, numpy array
+# T_matrix: transition matrix. Default value is the value given in the umbrella world, numpy array
+# Returns the next state
 def Forward(
     f: np.ndarray,
     O_matrix: np.ndarray,
@@ -12,6 +18,12 @@ def Forward(
     return fnext
 
 
+# Function which implements the backward operation described in Russel and Norvig.
+# Params:
+# f: previous state, numpy array
+# O_matrix: matrix to apply to state, denoted O in Russel and Norvig, numpy array
+# T_matrix: transition matrix. Default value is the value given in the umbrella world, numpy array
+# Returns the next state
 def Backward(
     f: np.ndarray,
     O_matrix: np.ndarray,
@@ -23,6 +35,16 @@ def Backward(
 
 
 def ForwardBackward(ev: np.ndarray, prior: np.ndarray) -> np.ndarray:
+    """
+    Function which implements the forward-backward algorith described in Russel and Norvig
+
+        Parameters:
+            ev (np.ndarray): numpy array containing evidence matrices
+            prior (np.ndarray): initial state
+
+        Returns:
+            sv (np.ndarray): probablities for each evidence
+    """
     fv: np.ndarray = np.zeros((ev.shape[0] + 1, prior.shape[0]))
     bv: np.ndarray = np.zeros((ev.shape[0], prior.shape[0]))
     b: np.ndarray = np.ones(prior.shape[0])
