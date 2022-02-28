@@ -7,6 +7,7 @@ class Node:
         self.parent: Node = None
         self.children: Dict[int, Node] = {}
         self.attribute: int = None
+        self.type: int = None
 
 
 class Data:
