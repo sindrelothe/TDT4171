@@ -1,13 +1,18 @@
 import numpy as np
-from typing import List
+from typing import List, Dict
 
 
 class Node:
+    def __init__(self):
+        self.parent: Node = None
+        self.children: Dict[int, Node] = {}
+        self.attribute: int = None
+
+
+class Data:
     def __init__(self, definition: np.ndarray):
         self.type: int = definition[-1]
         self.attributes: np.ndarray = definition[0:-1]
-        self.parent: Node = None
-        self.children: List[Node] = []
 
     def __repr__(self):
         return f"type={self.type}, attributes={self.attributes}"
@@ -22,24 +27,26 @@ class DecisionTree:
             path + test_filename, delimiter=",", dtype="int64"
         )
 
-        self.node_examples_list: List[Node] = [Node(ex) for ex in self.examples]
-        self.node_test_list: List[Node] = [Node(test) for test in self.test_values]
+        self.data_examples_list: List[Data] = [Data(ex) for ex in self.examples]
+        self.data_test_list: List[Data] = [Data(test) for test in self.test_values]
 
-        attributes: List[int] = [
-            n for n in range(len(self.node_examples_list[0].attributes))
+        self.attributes: List[int] = [
+            n for n in range(len(self.data_examples_list[0].attributes))
         ]
 
-    def randomImportance(self):
-        pass
+        self.root: Node = Node()
+
+    def randomImportance(self, values):
+        return np.random.choice(values)
 
     def BFunction(self, q: float) -> float:
         return -(q * np.log2(q) + (1 - q) * np.log2(1 - q))
 
     def learn(
-        self, examples: np.ndarray, attributes: np.ndarray, parent_examples: np.ndarray
+        self, examples: List[Data], attributes: List[int], parent_examples: List[Data]
     ):
-        if self.examples.size == 0:
-            return np.bincount(parent_examples).argmax()
+        if len(examples) == 0:
+            return np.bincount([p.type for p in parent_examples]).argmax()
 
 
 def main():
@@ -47,9 +54,9 @@ def main():
     test = "test.csv"
     train = "train.csv"
     tree: DecisionTree = DecisionTree(train, test, path)
-    n: Node = Node(tree.examples[0])
-    for n in tree.node_examples_list:
-        print(n.attributes)
+    n: Data = Data(tree.examples[0])
+    for n in tree.data_examples_list:
+        print(n)
 
 
 if __name__ == "__main__":
