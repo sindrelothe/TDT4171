@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Dict
+from typing import List, Dict, Callable
 
 
 class Node:
@@ -37,17 +37,59 @@ class DecisionTree:
 
         self.root: Node = Node()
 
-    def randomImportance(self, values):
-        return np.random.choice(values)
+    def randomImportance(self, a: int, values: List[Data]):
+        return np.random.random()
 
     def BFunction(self, q: float) -> float:
         return -(q * np.log2(q) + (1 - q) * np.log2(1 - q))
 
     def learn(
-        self, examples: List[Data], attributes: List[int], parent_examples: List[Data]
-    ):
+        self,
+        examples: List[Data],
+        attributes: List[int],
+        parent_examples: List[Data],
+        importanceFunc: Callable[[int, List[Data]], float],
+    ) -> Node:
         if len(examples) == 0:
-            return np.bincount([p.type for p in parent_examples]).argmax()
+            node: Node = Node()
+            node.type = np.bincount([p.type for p in parent_examples]).argmax()
+            return node
+
+        classifications: np.ndarray = np.array([ex.type for ex in examples])
+        if classifications.var() == 0:
+            node: Node = Node()
+            node.type = classifications[0]
+            return node
+
+        if len(attributes) == 0:
+            node: Node = Node()
+            node.type = np.bincount([p.type for p in examples]).argmax()
+            return node
+
+        max_importance: float = -np.inf
+        a_next = None
+        for a in attributes:
+            imp = importanceFunc(a, examples)
+            if imp > max_importance:
+                max_importance = imp
+                a_next = a
+        root = Node()
+        root.attribute = a_next
+
+        values_list: List[int] = []
+        for ex in examples:
+            if not ex.attributes[a_next] in values_list:
+                values_list.append(ex.attributes[a_next])
+
+        for v in values_list:
+            exs = [e for e in examples if e.type == v]
+            attributes_next = attributes.copy()
+            attributes_next.remove(a_next)
+            subtree: Node = self.learn(exs, attributes_next, examples)
+            root.children[v] = subtree
+            subtree.parent = root
+
+        return root
 
 
 def main():
@@ -56,8 +98,11 @@ def main():
     train = "train.csv"
     tree: DecisionTree = DecisionTree(train, test, path)
     n: Data = Data(tree.examples[0])
-    for n in tree.data_examples_list:
-        print(n)
+    # for n in tree.data_examples_list:
+    #     print(n)
+    vals = np.array([1, 1, 1, 1])
+
+    print(vals.var())
 
 
 if __name__ == "__main__":
