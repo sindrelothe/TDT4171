@@ -1,5 +1,6 @@
+import graphviz
 import numpy as np
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, Set
 
 
 class Node:
@@ -8,6 +9,39 @@ class Node:
         self.children: Dict[int, Node] = {}
         self.attribute: int = None
         self.type: int = None
+
+    def draw(self, filename):
+        tree = graphviz.Digraph(name="Decision Tree", filename=filename)
+        if self.type:
+            tree.node(name=f"type_{self.type}", label=f"Type {self.type}")
+            tree.render(view=True)
+            return
+
+        tree.node(name=f"attr_{self.attribute}", label=f"Attr {self.attribute}?")
+
+        self.draw_child(tree, f"attr_{self.attribute}")
+
+        tree.render(view=False)
+
+    def draw_child(self, tree: graphviz.Digraph, parent_string: str):
+        for key in self.children.keys():
+            if self.children[key].type:
+                child_name = f"type_{self.children[key].type}"
+                child_label = f"Type {self.children[key].type}"
+            else:
+                child_name = f"attr_{self.children[key].attribute}{key}"
+                child_label = f"Attr {self.children[key].attribute}?"
+            child_name = parent_string + child_name
+            tree.node(
+                name=child_name,
+                label=child_label,
+            )
+            tree.edge(
+                tail_name=parent_string,
+                head_name=child_name,
+                label=f"{key}",
+            )
+            self.children[key].draw_child(tree, child_name)
 
 
 class Data:
@@ -42,6 +76,23 @@ class DecisionTree:
 
     def BFunction(self, q: float) -> float:
         return -(q * np.log2(q) + (1 - q) * np.log2(1 - q))
+
+    def remainder(self, a: int, values: List[Data]):
+        values_set: Set[int] = set([d.attributes[a] for d in values])
+        out = 0
+        for att in values_set:
+            pk = len([d.type for d in values if d.type == 1 and d.attributes[a] == att])
+            nk = pk = len(
+                [d.type for d in values if d.type == 2 and d.attributes[a] == att]
+            )
+            if pk > 0 or nk > 0:
+                out += (pk + nk) * self.BFunction(pk / (pk + nk))
+        out /= len(values)
+        return out
+
+    def maxInformationImportance(self, a: int, values: List[Data]):
+        p = len([d.type for d in values if d.type == 1])
+        return self.BFunction(p / (len(values))) - self.remainder(a, values)
 
     def learn(
         self,
@@ -82,10 +133,12 @@ class DecisionTree:
                 values_list.append(ex.attributes[a_next])
 
         for v in values_list:
-            exs = [e for e in examples if e.type == v]
-            attributes_next = attributes.copy()
+            exs = [e for e in examples if e.attributes[a_next] == v]
+            attributes_next = list(attributes.copy())
             attributes_next.remove(a_next)
-            subtree: Node = self.learn(exs, attributes_next, examples)
+            subtree: Node = self.learn(
+                exs, np.array(attributes_next), examples, importanceFunc
+            )
             root.children[v] = subtree
             subtree.parent = root
 
@@ -97,12 +150,21 @@ def main():
     test = "test.csv"
     train = "train.csv"
     tree: DecisionTree = DecisionTree(train, test, path)
-    n: Data = Data(tree.examples[0])
-    # for n in tree.data_examples_list:
-    #     print(n)
-    vals = np.array([1, 1, 1, 1])
+    root: Node = tree.learn(
+        tree.data_examples_list,
+        tree.attributes,
+        [],
+        tree.randomImportance,
+    )
+    root.draw("random_dt")
 
-    print(vals.var())
+    root2: Node = tree.learn(
+        tree.data_examples_list,
+        tree.attributes,
+        [],
+        tree.maxInformationImportance,
+    )
+    root2.draw("maxImportance_dt")
 
 
 if __name__ == "__main__":

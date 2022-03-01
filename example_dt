@@ -1,0 +1,7 @@
+digraph "Decision Tree" {
+	attr_1 [label="Attr 1?"]
+	value_1 [label=1]
+	value_2 [label=2]
+	attr_1 -> value_1 [label=2]
+	attr_1 -> value_2 [label=1]
+}
