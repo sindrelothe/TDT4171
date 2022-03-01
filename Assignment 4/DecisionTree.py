@@ -71,6 +71,18 @@ class DecisionTree:
 
         self.root: Node = Node()
 
+    def classify(self, values: List[int]):
+        if self.root.type:
+            return self.root.type
+        if len(self.root.children.keys()) == 0:
+            raise Exception("Model is not trained")
+
+        current: Node = self.root
+        while not current.type:
+            current = current.children[values[current.attribute]]
+
+        return current.type
+
     def randomImportance(self, a: int, values: List[Data]):
         return np.random.random()
 
@@ -144,6 +156,15 @@ class DecisionTree:
 
         return root
 
+    def score(self, test_values: List[Data]):
+        fasit = np.array([tr.type for tr in test_values])
+        train_values = np.array(
+            [self.classify(list(tr.attributes)) for tr in test_values]
+        )
+        difference: np.ndarray = np.abs(fasit - train_values)
+        score = 1 - np.sum(difference) / difference.size
+        return score
+
 
 def main():
     path = "Assignment 4/data/"
@@ -157,7 +178,10 @@ def main():
         tree.randomImportance,
     )
     root.draw("random_dt")
+    tree.root = root
 
+    accuracy = tree.score(tree.data_test_list)
+    print(accuracy)
     root2: Node = tree.learn(
         tree.data_examples_list,
         tree.attributes,
@@ -165,6 +189,10 @@ def main():
         tree.maxInformationImportance,
     )
     root2.draw("maxImportance_dt")
+    tree.root = root2
+
+    accuracy = tree.score(tree.data_test_list)
+    print(accuracy)
 
 
 if __name__ == "__main__":
