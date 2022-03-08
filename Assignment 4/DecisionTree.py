@@ -87,6 +87,10 @@ class DecisionTree:
         return np.random.random()
 
     def BFunction(self, q: float) -> float:
+        if q == 1:
+            return -q * np.log2(q)
+        if q == 0:
+            return -(1 - q) * np.log2(1 - q)
         return -(q * np.log2(q) + (1 - q) * np.log2(1 - q))
 
     def remainder(self, a: int, values: List[Data]):
@@ -94,12 +98,12 @@ class DecisionTree:
         out = 0
         for att in values_set:
             pk = len([d.type for d in values if d.type == 1 and d.attributes[a] == att])
-            nk = pk = len(
-                [d.type for d in values if d.type == 2 and d.attributes[a] == att]
-            )
+            nk = len([d.type for d in values if d.type == 2 and d.attributes[a] == att])
             if pk > 0 or nk > 0:
                 out += (pk + nk) * self.BFunction(pk / (pk + nk))
+
         out /= len(values)
+
         return out
 
     def maxInformationImportance(self, a: int, values: List[Data]):
